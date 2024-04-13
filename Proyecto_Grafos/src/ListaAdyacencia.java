@@ -144,17 +144,17 @@ public class ListaAdyacencia {
     public static void main(String[] args) {
         ListaAdyacencia grafo = new ListaAdyacencia();
 
-        grafo.agregarVertice("A");
-        grafo.agregarVertice("B");
+        grafo.agregarVertice("A1");
+        grafo.agregarVertice("A4");
         grafo.agregarVertice("C");
         grafo.agregarVertice("D");
         grafo.agregarVertice("E");
         grafo.agregarVertice("F");
 
-        grafo.agregarArista("A", "B", 4);
-        grafo.agregarArista("A", "C", 8);
-        grafo.agregarArista("B", "C", 11);
-        grafo.agregarArista("B", "D", 8);
+        grafo.agregarArista("A1", "A4", 4);
+        grafo.agregarArista("A1", "C", 8);
+        grafo.agregarArista("A4", "C", 11);
+        grafo.agregarArista("A4", "D", 8);
         grafo.agregarArista("C", "E", 7);
         grafo.agregarArista("D", "E", 2);
         grafo.agregarArista("D", "F", 4);
@@ -163,10 +163,10 @@ public class ListaAdyacencia {
         grafo.imprimirLista();
         System.out.println();
 
-        grafo.dijkstra("A", "F");
+        grafo.dijkstra("A1", "F");
         System.out.println();
 
-        grafo.prim("A");
+        grafo.prim("A1");
         System.out.println();
     }
 }
