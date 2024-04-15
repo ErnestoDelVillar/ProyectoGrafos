@@ -6,7 +6,7 @@ import java.util.Map;
 import java.util.PriorityQueue;
 
 class Arista {
-    String destino;
+    String destino, origen;
     int peso;
 
     public Arista(String destino, int peso) {
@@ -82,6 +82,71 @@ public class ListaAdyacencia {
         System.out.print("Ruta más corta: ");
         imprimirRuta(origen, destino, camino);
     }
+    
+    private class Subset {
+        String parent;
+        int rank;
+    }
+
+    private String find(HashMap<String, Subset> subsets, String i) {
+        if (!subsets.get(i).parent.equals(i))
+            subsets.get(i).parent = find(subsets, subsets.get(i).parent);
+        return subsets.get(i).parent;
+    }
+
+    private void union(HashMap<String, Subset> subsets, String x, String y) {
+        String xroot = find(subsets, x);
+        String yroot = find(subsets, y);
+
+        if (subsets.get(xroot).rank < subsets.get(yroot).rank)
+            subsets.get(xroot).parent = yroot;
+        else if (subsets.get(xroot).rank > subsets.get(yroot).rank)
+            subsets.get(yroot).parent = xroot;
+        else {
+            subsets.get(yroot).parent = xroot;
+            subsets.get(xroot).rank++;
+        }
+    }
+
+    public void kruskal() {
+        ArrayList<Arista> result = new ArrayList<>();
+
+        ArrayList<Arista> aristas = new ArrayList<>();
+        for (Map.Entry<String, ArrayList<Arista>> entry : listaAdyacencia.entrySet()) {
+            for (Arista arista : entry.getValue()) {
+                aristas.add(arista);
+            }
+        }
+
+        aristas.sort(Comparator.comparingInt(a -> a.peso));
+
+        HashMap<String, Subset> subsets = new HashMap<>();
+        for (String vertice : listaAdyacencia.keySet()) {
+            subsets.put(vertice, new Subset());
+            subsets.get(vertice).parent = vertice;
+            subsets.get(vertice).rank = 0;
+        }
+
+        int i = 0;
+        while (result.size() < listaAdyacencia.size() - 1) {
+            Arista arista = aristas.get(i++);
+            String origen = arista.origen;
+            String destino = arista.destino;
+
+            String x = find(subsets, origen);
+            String y = find(subsets, destino);
+
+            if (!x.equals(y)) {
+                result.add(arista);
+                union(subsets, x, y);
+            }
+        }
+
+        System.out.println("Árbol de expansión mínima (Kruskal):");
+        for (Arista arista : result) {
+            System.out.println(arista.origen + " - " + arista.destino + " (Peso: " + arista.peso + ")");
+        }
+    }
 
     private void imprimirRuta(String origen, String destino, Map<String, String> camino) {
         ArrayList<String> ruta = new ArrayList<>();
@@ -144,17 +209,17 @@ public class ListaAdyacencia {
     public static void main(String[] args) {
         ListaAdyacencia grafo = new ListaAdyacencia();
 
-        grafo.agregarVertice("A1");
-        grafo.agregarVertice("A4");
+        grafo.agregarVertice("A");
+        grafo.agregarVertice("A");
         grafo.agregarVertice("C");
         grafo.agregarVertice("D");
         grafo.agregarVertice("E");
         grafo.agregarVertice("F");
 
-        grafo.agregarArista("A1", "A4", 4);
-        grafo.agregarArista("A1", "C", 8);
-        grafo.agregarArista("A4", "C", 11);
-        grafo.agregarArista("A4", "D", 8);
+        grafo.agregarArista("A", "A", 4);
+        grafo.agregarArista("A", "C", 8);
+        grafo.agregarArista("A", "C", 11);
+        grafo.agregarArista("A", "D", 8);
         grafo.agregarArista("C", "E", 7);
         grafo.agregarArista("D", "E", 2);
         grafo.agregarArista("D", "F", 4);
