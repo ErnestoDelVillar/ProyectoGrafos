@@ -1,17 +1,18 @@
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.LinkedHashMap; // Importa LinkedHashMap
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.PriorityQueue;
 
 class Arista {
     String destino, origen;
-    int peso;
+    int peso, tiempo;
 
-    public Arista(String destino, int peso) {
+    public Arista(String destino, int peso, int tiempo) {
         this.destino = destino;
         this.peso = peso;
+        this.tiempo = tiempo;
     }
 }
 
@@ -27,13 +28,14 @@ public class ListaAdyacencia {
         listaAdyacencia.put(vertice, new ArrayList<>());
     }
 
-    public void agregarArista(String origen, String destino, int peso) {
-        listaAdyacencia.get(origen).add(new Arista(destino, peso));
+    public void agregarArista(String origen, String destino, int peso, int tiempo) {
+        listaAdyacencia.get(origen).add(new Arista(destino, peso, tiempo));
         if (!origen.equals(destino)) {
-            listaAdyacencia.get(destino).add(new Arista(origen, peso));
+            listaAdyacencia.get(destino).add(new Arista(origen, peso, tiempo));
         }
     }
 
+    
     public void imprimirLista() {
         for (Map.Entry<String, ArrayList<Arista>> entry : listaAdyacencia.entrySet()) {
             System.out.print("Vértice " + entry.getKey() + " está conectado con: ");
@@ -158,43 +160,41 @@ public class ListaAdyacencia {
         }
         System.out.println();
     }
-
+    
     public void prim(String origen) {
-        int numVertices = listaAdyacencia.size();
-
-        Map<String, Boolean> visitado = new HashMap<>();
-        Map<String, String> padre = new HashMap<>();
-        Map<String, Integer> pesoMinimo = new HashMap<>();
+        Map<String, Integer> pesoMinimo = new HashMap<>(); 
+        Map<String, String> padre = new HashMap<>(); 
+        Map<String, Boolean> visitado = new HashMap<>(); 
 
         for (String vertice : listaAdyacencia.keySet()) {
-            visitado.put(vertice, false);
-            padre.put(vertice, null);
             pesoMinimo.put(vertice, Integer.MAX_VALUE);
+            padre.put(vertice, null); 
+            visitado.put(vertice, false); 
         }
 
-        PriorityQueue<Arista> cola = new PriorityQueue<>(numVertices, Comparator.comparingInt(a -> a.peso));
+        PriorityQueue<Arista> colaPrioridad = new PriorityQueue<>(Comparator.comparingInt(a -> a.peso));
 
-        pesoMinimo.put(origen, 0);
-        cola.offer(new Arista(origen, 0));
+        pesoMinimo.put(origen, 0); 
+        colaPrioridad.offer(new Arista(origen, 0, 0)); 
 
-        while (!cola.isEmpty()) {
-            Arista arista = cola.poll();
-            String actual = arista.destino;
+        while (!colaPrioridad.isEmpty()) {
+            Arista arista = colaPrioridad.poll(); 
+            String actual = arista.destino; 
 
-            visitado.put(actual, true);
+            visitado.put(actual, true); 
 
             for (Arista vecino : listaAdyacencia.get(actual)) {
-                String destino = vecino.destino;
-                int peso = vecino.peso;
-                if (!visitado.get(destino) && peso < pesoMinimo.get(destino)) {
-                    padre.put(destino, actual);
-                    pesoMinimo.put(destino, peso);
-                    cola.removeIf(a -> a.destino.equals(destino));
-                    cola.offer(new Arista(destino, peso));
+                String destinoVecino = vecino.destino;
+                int pesoVecino = vecino.peso;
+
+                if (!visitado.get(destinoVecino) && pesoVecino < pesoMinimo.get(destinoVecino)) {
+                    padre.put(destinoVecino, actual); 
+                    pesoMinimo.put(destinoVecino, pesoVecino); 
+                    colaPrioridad.offer(new Arista(destinoVecino, pesoVecino, 0));  
                 }
             }
         }
-
+        
         System.out.println("Árbol de expansión mínima desde el vértice " + origen + ":");
         for (Map.Entry<String, String> entry : padre.entrySet()) {
             String vertice = entry.getKey();
@@ -204,31 +204,32 @@ public class ListaAdyacencia {
                 System.out.println("Arista: " + padreVertice + " - " + vertice + " (Peso: " + peso + ")");
             }
         }
+        
     }
+
 
     public static void main(String[] args) {
         ListaAdyacencia grafo = new ListaAdyacencia();
 
         grafo.agregarVertice("A");
-        grafo.agregarVertice("A");
+        grafo.agregarVertice("b");
         grafo.agregarVertice("C");
-        grafo.agregarVertice("D");
-        grafo.agregarVertice("E");
-        grafo.agregarVertice("F");
+        grafo.agregarVertice("p");
 
-        grafo.agregarArista("A", "A", 4);
-        grafo.agregarArista("A", "C", 8);
-        grafo.agregarArista("A", "C", 11);
-        grafo.agregarArista("A", "D", 8);
-        grafo.agregarArista("C", "E", 7);
-        grafo.agregarArista("D", "E", 2);
-        grafo.agregarArista("D", "F", 4);
-        grafo.agregarArista("E", "F", 9);
+
+        grafo.agregarArista("A", "b", 4, 20);
+        grafo.agregarArista("b", "C", 7, 15);
+        grafo.agregarArista("C", "p", 12, 14);
+        grafo.agregarArista("b", "p", 12, 20);
+
 
         grafo.imprimirLista();
         System.out.println();
 
-        grafo.dijkstra("A1", "F");
+        grafo.dijkstra("A", "c");
+        System.out.println();
+        
+        grafo.kruskal();
         System.out.println();
 
         grafo.prim("A1");
