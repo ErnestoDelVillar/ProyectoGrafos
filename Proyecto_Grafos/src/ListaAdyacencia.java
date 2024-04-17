@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.PriorityQueue;
+import java.util.Scanner;
 
 class Arista {
     String destino, origen;
@@ -21,7 +22,7 @@ public class ListaAdyacencia {
     private Map<String, ArrayList<Arista>> listaAdyacencia;
 
     public ListaAdyacencia() {
-        listaAdyacencia = new LinkedHashMap<>(); 
+        listaAdyacencia = new LinkedHashMap<>();
     }
 
     public void agregarVertice(String vertice) {
@@ -35,7 +36,7 @@ public class ListaAdyacencia {
         }
     }
 
-    
+
     public void imprimirLista() {
         for (Map.Entry<String, ArrayList<Arista>> entry : listaAdyacencia.entrySet()) {
             System.out.print("Vértice " + entry.getKey() + " está conectado con: ");
@@ -83,71 +84,6 @@ public class ListaAdyacencia {
 
         System.out.print("Ruta más corta: ");
         imprimirRuta(origen, destino, camino);
-    }
-    
-    private class Subset {
-        String parent;
-        int rank;
-    }
-
-    private String find(HashMap<String, Subset> subsets, String i) {
-        if (!subsets.get(i).parent.equals(i))
-            subsets.get(i).parent = find(subsets, subsets.get(i).parent);
-        return subsets.get(i).parent;
-    }
-
-    private void union(HashMap<String, Subset> subsets, String x, String y) {
-        String xroot = find(subsets, x);
-        String yroot = find(subsets, y);
-
-        if (subsets.get(xroot).rank < subsets.get(yroot).rank)
-            subsets.get(xroot).parent = yroot;
-        else if (subsets.get(xroot).rank > subsets.get(yroot).rank)
-            subsets.get(yroot).parent = xroot;
-        else {
-            subsets.get(yroot).parent = xroot;
-            subsets.get(xroot).rank++;
-        }
-    }
-
-    public void kruskal() {
-        ArrayList<Arista> result = new ArrayList<>();
-
-        ArrayList<Arista> aristas = new ArrayList<>();
-        for (Map.Entry<String, ArrayList<Arista>> entry : listaAdyacencia.entrySet()) {
-            for (Arista arista : entry.getValue()) {
-                aristas.add(arista);
-            }
-        }
-
-        aristas.sort(Comparator.comparingInt(a -> a.peso));
-
-        HashMap<String, Subset> subsets = new HashMap<>();
-        for (String vertice : listaAdyacencia.keySet()) {
-            subsets.put(vertice, new Subset());
-            subsets.get(vertice).parent = vertice;
-            subsets.get(vertice).rank = 0;
-        }
-
-        int i = 0;
-        while (result.size() < listaAdyacencia.size() - 1) {
-            Arista arista = aristas.get(i++);
-            String origen = arista.origen;
-            String destino = arista.destino;
-
-            String x = find(subsets, origen);
-            String y = find(subsets, destino);
-
-            if (!x.equals(y)) {
-                result.add(arista);
-                union(subsets, x, y);
-            }
-        }
-
-        System.out.println("Árbol de expansión mínima (Kruskal):");
-        for (Arista arista : result) {
-            System.out.println(arista.origen + " - " + arista.destino + " (Peso: " + arista.peso + ")");
-        }
     }
 
     private void imprimirRuta(String origen, String destino, Map<String, String> camino) {
@@ -206,33 +142,116 @@ public class ListaAdyacencia {
         }
         
     }
+    
+    public void kruskal() {
+        ArrayList<Arista> result = new ArrayList<>();
+        PriorityQueue<Arista> aristas = new PriorityQueue<>(Comparator.comparingInt(a -> a.peso));
+
+        for (ArrayList<Arista> aristaList : listaAdyacencia.values()) {
+            aristas.addAll(aristaList);
+        }
+
+        HashMap<String, String> parent = new HashMap<>();
+        for (String vertice : listaAdyacencia.keySet()) {
+            parent.put(vertice, vertice);
+        }
+
+        while (!aristas.isEmpty()) {
+            Arista arista = aristas.poll();
+            String x = find(parent, arista.origen);
+            String y = find(parent, arista.destino);
+            if (!x.equals(y)) {
+                result.add(arista);
+                union(parent, x, y);
+            }
+        }
+
+        System.out.println("Árbol de expansión mínima (Kruskal):");
+        for (Arista arista : result) {
+            System.out.println(arista.origen + " - " + arista.destino + " (Peso: " + arista.peso + ")");
+        }
+    }
+
+    private String find(HashMap<String, String> parent, String i) {
+        if (!parent.get(i).equals(i)) {
+            parent.put(i, find(parent, parent.get(i)));
+        }
+        return parent.get(i);
+    }
+
+    private void union(HashMap<String, String> parent, String x, String y) {
+        parent.put(find(parent, x), find(parent, y));
+    }
 
 
     public static void main(String[] args) {
-        ListaAdyacencia grafo = new ListaAdyacencia();
+    	ListaAdyacencia grafo = new ListaAdyacencia();
+    	/*Scanner scanner = new Scanner(System.in);
+        int opcion;
+
+        do {
+            System.out.println("Menú de opciones:");
+            System.out.println("1. Opción 1");
+            System.out.println("2. Imprimir lista");
+            System.out.println("3. Dijkstra");
+            System.out.println("4. kruskal");
+            System.out.println("5. prim");
+            System.out.println("6. salir");
+            System.out.print("Elige una opción: ");
+
+            opcion = scanner.nextInt();
+
+            switch (opcion) {
+                case 1:
+                    System.out.println("Has seleccionado la Opción 1");
+                    // Aquí puedes poner el código correspondiente a la opción 1
+                    break;
+                case 2:
+                    System.out.println("2. Imprimir lista");
+                    // Código para la opción 2
+                    break;
+                case 3:
+                    System.out.println("3. Dijkstra");
+                    // Código para la opción 3
+                    break;
+                case 4:
+                    System.out.println("4. kruskal");
+                    break;
+                case 5:
+                	System.out.println("5. prim");
+                	break;
+                case 6:
+                	System.out.println("6. salir");
+                	break;
+                default:
+                    System.out.println("Error Valor ingresado fuera de los limetes.");
+                    break;
+            }
+
+        } while (opcion != 4);
+
+        scanner.close();*/
 
         grafo.agregarVertice("A");
         grafo.agregarVertice("b");
         grafo.agregarVertice("C");
         grafo.agregarVertice("p");
 
-
         grafo.agregarArista("A", "b", 4, 20);
         grafo.agregarArista("b", "C", 7, 15);
         grafo.agregarArista("C", "p", 12, 14);
         grafo.agregarArista("b", "p", 12, 20);
 
-
         grafo.imprimirLista();
         System.out.println();
 
-        grafo.dijkstra("A", "c");
+        grafo.dijkstra("A", "p");
         System.out.println();
         
         grafo.kruskal();
         System.out.println();
 
-        grafo.prim("A1");
+        grafo.prim("A");
         System.out.println();
     }
 }
