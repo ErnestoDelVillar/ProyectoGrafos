@@ -1,16 +1,21 @@
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.PriorityQueue;
-import java.util.Scanner;
+import java.util.Set;
 
 class Arista {
-    String destino, origen;
-    int peso, tiempo;
+    String origen;
+    String destino;
+    int peso;
+    int tiempo;
+    
 
-    public Arista(String destino, int peso, int tiempo) {
+    public Arista(String origen, String destino, int peso, int tiempo) {
+        this.origen = origen;
         this.destino = destino;
         this.peso = peso;
         this.tiempo = tiempo;
@@ -30,9 +35,9 @@ public class ListaAdyacencia {
     }
 
     public void agregarArista(String origen, String destino, int peso, int tiempo) {
-        listaAdyacencia.get(origen).add(new Arista(destino, peso, tiempo));
+        listaAdyacencia.get(origen).add(new Arista(origen, destino, peso, tiempo));
         if (!origen.equals(destino)) {
-            listaAdyacencia.get(destino).add(new Arista(origen, peso, tiempo));
+            listaAdyacencia.get(destino).add(new Arista(destino, origen, peso, tiempo));
         }
     }
 
@@ -99,90 +104,90 @@ public class ListaAdyacencia {
     
     public void prim(String origen) {
         Map<String, Integer> pesoMinimo = new HashMap<>(); 
-        Map<String, String> padre = new HashMap<>(); 
-        Map<String, Boolean> visitado = new HashMap<>(); 
+        Map<String, Arista> padre = new LinkedHashMap<>();
+        Set<String> visitado = new HashSet<>();
 
         for (String vertice : listaAdyacencia.keySet()) {
             pesoMinimo.put(vertice, Integer.MAX_VALUE);
             padre.put(vertice, null); 
-            visitado.put(vertice, false); 
         }
 
         PriorityQueue<Arista> colaPrioridad = new PriorityQueue<>(Comparator.comparingInt(a -> a.peso));
 
         pesoMinimo.put(origen, 0); 
-        colaPrioridad.offer(new Arista(origen, 0, 0)); 
+        colaPrioridad.offer(new Arista(origen, origen, 0, 0)); 
 
         while (!colaPrioridad.isEmpty()) {
             Arista arista = colaPrioridad.poll(); 
             String actual = arista.destino; 
 
-            visitado.put(actual, true); 
+            if (visitado.contains(actual)) continue; 
+
+            visitado.add(actual); 
 
             for (Arista vecino : listaAdyacencia.get(actual)) {
                 String destinoVecino = vecino.destino;
                 int pesoVecino = vecino.peso;
 
-                if (!visitado.get(destinoVecino) && pesoVecino < pesoMinimo.get(destinoVecino)) {
-                    padre.put(destinoVecino, actual); 
+                if (!visitado.contains(destinoVecino) && pesoVecino < pesoMinimo.get(destinoVecino)) {
+                    padre.put(destinoVecino, vecino); 
                     pesoMinimo.put(destinoVecino, pesoVecino); 
-                    colaPrioridad.offer(new Arista(destinoVecino, pesoVecino, 0));  
+                    colaPrioridad.offer(new Arista(actual, destinoVecino, pesoVecino, 0));  
                 }
             }
         }
         
-        System.out.println("Árbol de expansión mínima desde el vértice " + origen + ":");
-        for (Map.Entry<String, String> entry : padre.entrySet()) {
+        System.out.println("Árbol de expansión mínima desde el vértice " + origen + ": (Prim)");
+        for (Map.Entry<String, Arista> entry : padre.entrySet()) {
             String vertice = entry.getKey();
-            String padreVertice = entry.getValue();
-            if (padreVertice != null) {
+            Arista arista = entry.getValue();
+            if (arista != null) {
                 int peso = pesoMinimo.get(vertice);
-                System.out.println("Arista: " + padreVertice + " - " + vertice + " (Peso: " + peso + ")");
+                System.out.println("Arista: " + arista.origen + " - " + arista.destino + " (Peso: " + peso + ")");
             }
         }
-        
     }
+
+
     
+
+    // Método para ejecutar el algoritmo de Kruskal y encontrar el árbol de expansión mínima
     public void kruskal() {
-        ArrayList<Arista> result = new ArrayList<>();
-        PriorityQueue<Arista> aristas = new PriorityQueue<>(Comparator.comparingInt(a -> a.peso));
-
-        for (ArrayList<Arista> aristaList : listaAdyacencia.values()) {
-            aristas.addAll(aristaList);
-        }
-
-        HashMap<String, String> parent = new HashMap<>();
-        for (String vertice : listaAdyacencia.keySet()) {
-            parent.put(vertice, vertice);
-        }
-
-        while (!aristas.isEmpty()) {
-            Arista arista = aristas.poll();
-            String x = find(parent, arista.origen);
-            String y = find(parent, arista.destino);
-            if (!x.equals(y)) {
-                result.add(arista);
-                union(parent, x, y);
+        int numVertices = listaAdyacencia.size();
+        PriorityQueue<Arista> cola = new PriorityQueue<>(Comparator.comparingInt(a -> a.peso)); // Cola de prioridad para ordenar las aristas por peso
+        Set<String> conjunto = new HashSet<>(); // Conjunto para verificar la conectividad de los vértices
+        ArrayList<Arista> arbolExpMin = new ArrayList<>(); // Lista para almacenar las aristas del árbol de expansión mínima
+        
+        
+        // Iterar sobre los valores de la lista de adyacencia para obtener todas las aristas
+        for (ArrayList<Arista> aristas : listaAdyacencia.values()) {
+            for (Arista arista : aristas) {
+                if (!arista.origen.equals(arista.destino)) { // Verificar que la arista no sea un bucle
+                    cola.add(arista);
+                }
             }
         }
 
+        while (!cola.isEmpty() && (arbolExpMin.size() < numVertices - 1)) {
+            Arista arista = cola.poll(); // Obtener la arista con el menor peso
+            if (!formaCiclo(conjunto, arista.origen, arista.destino)) {
+                arbolExpMin.add(arista);
+                conjunto.add(arista.origen);
+                conjunto.add(arista.destino);
+            }
+        }
+
+        // Imprimir el árbol de expansión mínima
         System.out.println("Árbol de expansión mínima (Kruskal):");
-        for (Arista arista : result) {
-            System.out.println(arista.origen + " - " + arista.destino + " (Peso: " + arista.peso + ")");
+        for (Arista arista : arbolExpMin) {
+            System.out.println("Arista: " + arista.origen + " - " + arista.destino + " (Peso: " + arista.peso + ")");
         }
     }
 
-    private String find(HashMap<String, String> parent, String i) {
-        if (!parent.get(i).equals(i)) {
-            parent.put(i, find(parent, parent.get(i)));
-        }
-        return parent.get(i);
+    private boolean formaCiclo(Set<String> conjunto, String origen, String destino) {
+        // Verificar si ambos vértices están en el mismo conjunto
+        return conjunto.contains(origen) && conjunto.contains(destino);
     }
-
-    private void union(HashMap<String, String> parent, String x, String y) {
-        parent.put(find(parent, x), find(parent, y));
-    }
-
 
     public static void main(String[] args) {
     	ListaAdyacencia grafo = new ListaAdyacencia();
@@ -232,26 +237,27 @@ public class ListaAdyacencia {
 
         scanner.close();*/
 
-        grafo.agregarVertice("A");
+        grafo.agregarVertice("a");
         grafo.agregarVertice("b");
-        grafo.agregarVertice("C");
-        grafo.agregarVertice("p");
+        grafo.agregarVertice("c");
+        grafo.agregarVertice("d");
 
-        grafo.agregarArista("A", "b", 4, 20);
-        grafo.agregarArista("b", "C", 7, 15);
-        grafo.agregarArista("C", "p", 12, 14);
-        grafo.agregarArista("b", "p", 12, 20);
+        grafo.agregarArista("a", "b", 4, 20);
+        grafo.agregarArista("b", "c", 7, 15);
+        grafo.agregarArista("b", "d", 12, 20);
+        grafo.agregarArista("c", "d", 15, 14);
+        
 
         grafo.imprimirLista();
         System.out.println();
 
-        grafo.dijkstra("A", "p");
+        grafo.dijkstra("a", "d");
         System.out.println();
         
         grafo.kruskal();
         System.out.println();
 
-        grafo.prim("A");
+        grafo.prim("a");
         System.out.println();
     }
 }
