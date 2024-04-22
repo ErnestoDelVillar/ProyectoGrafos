@@ -31,29 +31,161 @@ public class ListaAdyacencia {
         listaAdyacencia = new LinkedHashMap<>();
     }
 
+//Vertices---------------------------------------------------------------------------------------------------------------------------------------------
     public void agregarVertice(String vertice) {
         listaAdyacencia.put(vertice, new ArrayList<>());
     }
+    
+    public void eliminarVertice(String verticeEliminar) {
+        if (listaAdyacencia.containsKey(verticeEliminar)) {
+            // Eliminar el vértice de la lista de adyacencia
+            listaAdyacencia.remove(verticeEliminar);
 
+            // Eliminar todas las aristas que tengan el vértice como origen o destino
+            for (ArrayList<Arista> aristas : listaAdyacencia.values()) {
+                aristas.removeIf(arista -> arista.origen.equals(verticeEliminar) || arista.destino.equals(verticeEliminar));
+            }
+
+            System.out.println("Vértice " + verticeEliminar + " y todas sus aristas asociadas han sido eliminadas.");
+        } else {
+            System.out.println("El vértice especificado no existe en el grafo.");
+        }
+    }
+    
+    public void editarVertice(String verticeEditar, String nuevoNombre) {
+
+        listaAdyacencia.put(nuevoNombre, listaAdyacencia.remove(verticeEditar));
+
+        for (ArrayList<Arista> aristas : listaAdyacencia.values()) {
+            for (Arista arista : aristas) {
+                if (arista.destino.equals(verticeEditar)) {
+                    arista.destino = nuevoNombre;
+                }
+                if (arista.origen.equals(verticeEditar)) {
+                    arista.origen = nuevoNombre;
+                }
+            }
+        }
+}   
+    
+    public void VerticesDisponibles() {
+   	 ArrayList<String> verticesImpresos = new ArrayList<>(); // Para evitar imprimir vértices repetidos
+       
+       System.out.println("Vertices disponibles: ");
+       for (String vertice : listaAdyacencia.keySet()) {
+           if (!verticesImpresos.contains(vertice)) {
+               System.out.print("Vértice: " + vertice + " -- ");
+               verticesImpresos.add(vertice);
+           }
+       }
+   } 
+    
+// Aristas---------------------------------------------------------------------------------------------------------------------------------------------    
+    
     public void agregarArista(String origen, String destino, int peso, int tiempo) {
         listaAdyacencia.get(origen).add(new Arista(origen, destino, peso, tiempo));
         if (!origen.equals(destino)) {
             listaAdyacencia.get(destino).add(new Arista(destino, origen, peso, tiempo));
         }
-    }
-
-
-    public void imprimirLista() {
-        for (Map.Entry<String, ArrayList<Arista>> entry : listaAdyacencia.entrySet()) {
-            System.out.print("Vértice " + entry.getKey() + " está conectado con: ");
-            for (Arista arista : entry.getValue()) {
-                System.out.print(arista.destino + "(peso: " + arista.peso + ") ");
+    }    
+    
+    public void modificarArista(String origen, String destino, int nuevoPeso, int nuevoTiempo) {
+        if (listaAdyacencia.containsKey(origen) && listaAdyacencia.containsKey(destino)) {
+            boolean aristaEncontrada = false;
+            // Modificar la arista en la dirección origen -> destino
+            ArrayList<Arista> aristasOrigen = listaAdyacencia.get(origen);
+            for (Arista arista : aristasOrigen) {
+                if (arista.destino.equals(destino)) {
+                    arista.peso = nuevoPeso;
+                    arista.tiempo = nuevoTiempo;
+                    aristaEncontrada = true;
+                    System.out.println("Arista modificada exitosamente.");
+                    break;
+                }
             }
-            System.out.println();
+            // Modificar la arista en la dirección destino -> origen
+            ArrayList<Arista> aristasDestino = listaAdyacencia.get(destino);
+            for (Arista arista : aristasDestino) {
+                if (arista.destino.equals(origen)) {
+                    arista.peso = nuevoPeso;
+                    arista.tiempo = nuevoTiempo;
+                    aristaEncontrada = true;
+                    break;
+                }
+            }
+            if (!aristaEncontrada) {
+                System.out.println("La arista especificada no existe en el grafo.");
+            }
+        } else {
+            System.out.println("No se han encontrado los vértices introducidos.");
         }
     }
 
 
+    
+    public boolean eliminarArista(String origen, String destino) {
+    	
+        if (!listaAdyacencia.containsKey(origen) || !listaAdyacencia.containsKey(destino)) {
+            System.out.println("No se han encontrado los vértices introducidos.");
+            return false;
+        }
+        
+        if (existeArista(origen, destino)) {
+            ArrayList<Arista> aristasOrigen = listaAdyacencia.get(origen);
+            ArrayList<Arista> aristasDestino = listaAdyacencia.get(destino);
+            
+            aristasOrigen.removeIf(arista -> arista.destino.equals(destino));
+            aristasDestino.removeIf(arista -> arista.destino.equals(origen));
+            
+            if (aristasOrigen.isEmpty()) {
+                eliminarVertice(origen);
+            }
+
+            System.out.println("Arista eliminada exitosamente.");
+            return true;
+        } else {
+            System.out.println("La arista especificada no existe en el grafo.");
+            return false;
+        }
+    }    
+    
+    public boolean existeArista(String origen, String destino) {
+        
+        if (!listaAdyacencia.containsKey(origen) || !listaAdyacencia.containsKey(destino)) {
+            return false;
+        }
+        
+        // Recorre las aristas del vértice origen para verificar si existe una arista al destino
+        for (Arista arista : listaAdyacencia.get(origen)) {
+            if (arista.destino.equals(destino)) {
+                return true; // Se encontró una arista al destino desde el origen
+            }
+        }
+        
+        
+        // Si no se encontró una arista al destino desde el origen
+        return false;
+    }    
+    
+    public void AristasDisponibles() {
+        HashSet<String> aristasImpresas = new HashSet<>(); // Usamos un conjunto para evitar aristas duplicadas
+        
+        System.out.println("Aristas Disponibles: ");
+        for (Map.Entry<String, ArrayList<Arista>> entry : listaAdyacencia.entrySet()) {
+            String origen = entry.getKey();
+            for (Arista arista : entry.getValue()) {
+                String destino = arista.destino;
+                String aristaKey = origen.compareTo(destino) < 0 ? origen + "-" + destino : destino + "-" + origen;
+                if (!aristasImpresas.contains(aristaKey)) {
+                    System.out.println("Arista: " + origen + " - " + destino + " (Peso: " + arista.peso + ", Tiempo: " + arista.tiempo + ")");
+                    aristasImpresas.add(aristaKey);
+                }
+            }
+        }
+    }
+    
+//Algoritmos de La ruta mas corta----------------------------------------------------------------------------------------------------------------------    
+    
     public void dijkstra(String origen, String destino) {
         Map<String, Integer> distancia = new HashMap<>(); 
         Map<String, Boolean> visitado = new HashMap<>(); 
@@ -91,7 +223,57 @@ public class ListaAdyacencia {
         System.out.print("Ruta más corta: ");
         imprimirRuta(origen, destino, camino);
     }
+
     
+    public void floydWarshall() {
+        int n = listaAdyacencia.size();
+        int[][] distancias = new int[n][n];
+
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < n; j++) {
+                distancias[i][j] = (i == j) ? 0 : Integer.MAX_VALUE;
+            }
+        }
+
+        for (String vertice : listaAdyacencia.keySet()) {
+            for (Arista arista : listaAdyacencia.get(vertice)) {
+                int fila = getIndex(vertice);
+                int columna = getIndex(arista.destino);
+                distancias[fila][columna] = arista.peso;
+            }
+        }
+
+        for (int k = 0; k < n; k++) {
+            for (int i = 0; i < n; i++) {
+                for (int j = 0; j < n; j++) {
+                    if (distancias[i][k] != Integer.MAX_VALUE && distancias[k][j] != Integer.MAX_VALUE) {
+                        distancias[i][j] = Math.min(distancias[i][j], distancias[i][k] + distancias[k][j]);
+                    }
+                }
+            }
+        }
+
+        System.out.println("Matriz de distancias mínimas (Floyd-Warshall):");
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < n; j++) {
+                System.out.print((distancias[i][j] == Integer.MAX_VALUE ? "INF" : distancias[i][j]) + "\t");
+            }
+            System.out.println();
+        }
+    }
+
+    private int getIndex(String vertice) {
+        int i = 0;
+        for (String v : listaAdyacencia.keySet()) {
+            if (v.equals(vertice)) {
+                return i;
+            }
+            i++;
+        }
+        return -1;
+    }
+    
+
     public void rutaMasCorta(String origen, String destino) {
         Map<String, Integer> distanciaPeso = new HashMap<>();
         Map<String, Boolean> visitadoPeso = new HashMap<>();
@@ -164,17 +346,8 @@ public class ListaAdyacencia {
         imprimirRuta(origen, destino, caminoTiempo);
         System.out.println("Tiempo total: " + distanciaTiempo.get(destino));
     }
-
-    private void imprimirRuta(String origen, String destino, Map<String, String> camino) {
-        ArrayList<String> ruta = new ArrayList<>();
-        for (String v = destino; v != null; v = camino.get(v)) {
-            ruta.add(v);
-        }
-        for (int i = ruta.size() - 1; i >= 0; i--) {
-            System.out.print(ruta.get(i) + " ");
-        }
-        System.out.println();
-    }
+    
+//Algoritmos de Arbol de expancion minima--------------------------------------------------------------------------------------------------------------    
     
     public void prim(String origen) {
         Map<String, Integer> pesoMinimo = new HashMap<>(); 
@@ -222,7 +395,6 @@ public class ListaAdyacencia {
         }
     }
 
-
     
     public void kruskal() {
         int numVertices = listaAdyacencia.size();
@@ -257,60 +429,339 @@ public class ListaAdyacencia {
     private boolean formaCiclo(Set<String> conjunto, String origen, String destino) {
         return conjunto.contains(origen) && conjunto.contains(destino);
     }
+
+//Metodos Auxiliares-----------------------------------------------------------------------------------------------------------------------------------    
     
-    public void floydWarshall() {
-        int n = listaAdyacencia.size();
-        int[][] distancias = new int[n][n];
-
-        for (int i = 0; i < n; i++) {
-            for (int j = 0; j < n; j++) {
-                distancias[i][j] = (i == j) ? 0 : Integer.MAX_VALUE;
-            }
-        }
-
-        for (String vertice : listaAdyacencia.keySet()) {
-            for (Arista arista : listaAdyacencia.get(vertice)) {
-                int fila = getIndex(vertice);
-                int columna = getIndex(arista.destino);
-                distancias[fila][columna] = arista.peso;
-            }
-        }
-
-        for (int k = 0; k < n; k++) {
-            for (int i = 0; i < n; i++) {
-                for (int j = 0; j < n; j++) {
-                    if (distancias[i][k] != Integer.MAX_VALUE && distancias[k][j] != Integer.MAX_VALUE) {
-                        distancias[i][j] = Math.min(distancias[i][j], distancias[i][k] + distancias[k][j]);
-                    }
-                }
-            }
-        }
-
-        System.out.println("Matriz de distancias mínimas (Floyd-Warshall):");
-        for (int i = 0; i < n; i++) {
-            for (int j = 0; j < n; j++) {
-                System.out.print((distancias[i][j] == Integer.MAX_VALUE ? "INF" : distancias[i][j]) + "\t");
+    public void imprimirLista() {
+        for (Map.Entry<String, ArrayList<Arista>> entry : listaAdyacencia.entrySet()) {
+            System.out.print("Vértice " + entry.getKey() + " está conectado con: ");
+            for (Arista arista : entry.getValue()) {
+                System.out.print(arista.destino + "(peso: " + arista.peso + ") ");
             }
             System.out.println();
         }
     }
 
-    private int getIndex(String vertice) {
-        int i = 0;
-        for (String v : listaAdyacencia.keySet()) {
-            if (v.equals(vertice)) {
-                return i;
-            }
-            i++;
+    private void imprimirRuta(String origen, String destino, Map<String, String> camino) {
+        ArrayList<String> ruta = new ArrayList<>();
+        for (String v = destino; v != null; v = camino.get(v)) {
+            ruta.add(v);
         }
-        return -1;
-    }
-
-    public static void main(String[] args) {
-    	ListaAdyacencia grafo = new ListaAdyacencia();
-    	Scanner scanner = new Scanner(System.in);
+        for (int i = ruta.size() - 1; i >= 0; i--) {
+            System.out.print(ruta.get(i) + " ");
+        }
+        System.out.println();
+    }    
+    
+    public static void menu(ListaAdyacencia grafo) {
         int opcion, opcion2, peso, tiempo;
         String origenArista, destinoArista;
+        Scanner scanner = new Scanner(System.in);
+        
+        do {
+            grafo.imprimirLista();
+            System.out.println();
+            
+            System.out.println("Menú de opciones:");
+            System.out.println("1. Menu Vertice.");
+            System.out.println("2. Menu Aristas.");
+            System.out.println("3. dijkstra.");
+            System.out.println("4. kruskal.");
+            System.out.println("5. prim.");
+            System.out.println("6. floyd-Warshall.");
+            System.out.println("7. Distancia mas corta y tiempo mas corto.");
+            System.out.println("8. Salir.");
+            System.out.println();
+
+            opcion = scanner.nextInt();
+
+            switch (opcion) {
+            
+                case 1:
+                	System.out.println();
+                    System.out.println("1. Agregar vertice ");
+                    System.out.println("2. Editor vertice  ");
+                    System.out.println("3. Eliminar vertice");
+                    System.out.println("4. Atras           ");
+                    
+                    opcion2 = scanner.nextInt();
+                    switch (opcion2) {
+                    
+                        case 1:
+                        	
+                            System.out.println();
+                            System.out.println("Agregar Vertice: ");
+                            System.out.print("Ingrese el nombre del vértice: ");
+                            String vertice = scanner.next();
+                            grafo.agregarVertice(vertice);
+
+                            String respuesta = "s";
+                            
+                            grafo.VerticesDisponibles();
+                            while (respuesta.equalsIgnoreCase("s")) {
+                            	System.out.println();
+                                System.out.print("Ingrese el destino de la arista: ");
+                                String destino = scanner.next();
+                                System.out.print("Ingrese el peso de la arista: ");
+                                peso = scanner.nextInt();
+                                System.out.print("Ingrese el tiempo de la arista: ");
+                                tiempo = scanner.nextInt();
+                                grafo.agregarArista(vertice, destino, peso, tiempo);
+
+                                System.out.println("¿Desea agregar otra arista para este vértice? (s/n)");
+                                respuesta = scanner.next();
+                            }
+                            System.out.println();
+                            break;
+                        case 2:
+                        	
+                        	System.out.println();
+                        	System.out.println("Editar Vertice:");
+                            grafo.VerticesDisponibles();
+                            System.out.println();
+                            System.out.print("Ingrese el nombre del vértice que desea editar: ");
+                            String verticeEditar = scanner.next();
+                            if (grafo.listaAdyacencia.containsKey(verticeEditar)) {
+                            	
+                                System.out.print("Ingrese el nuevo nombre para el vértice: ");
+                                String nuevoNombre = scanner.next();
+                                grafo.editarVertice(verticeEditar, nuevoNombre);
+                                
+                            } else {
+                                System.out.println("El vértice especificado no existe en el grafo.");
+                            }
+                            System.out.println();
+                            break;
+                        case 3:
+                            
+                            System.out.println();
+                            System.out.println("Eliminar Vertice: ");
+                            grafo.VerticesDisponibles();
+                            System.out.println();
+                            System.out.print("Ingrese el nombre del vértice que desea eliminar: ");
+                            String verticeEliminar = scanner.next();
+                            grafo.eliminarVertice(verticeEliminar);
+                            System.out.println();
+                            break;
+                            
+                        case 4:
+                        	System.out.println();
+                        	break;
+                    }
+                    break;
+                    
+                case 2:
+                	
+                    System.out.println();
+                    System.out.println("1. Agregar Arista");
+                    System.out.println("2. Editor Arista");
+                    System.out.println("3. Eliminar Arista");
+                    opcion2 = scanner.nextInt();
+                    switch (opcion2) {
+                    
+                        case 1:
+                        	
+                        	System.out.println();
+                        	System.out.println("Agregar Arista: ");
+                        	grafo.VerticesDisponibles();
+                        	System.out.println();
+                            System.out.print("Ingrese el vertice origen de la arista: ");
+                            origenArista = scanner.next();
+                            System.out.print("Ingrese el vertice destino de la arista: ");
+                            destinoArista = scanner.next();
+                            
+                            while( grafo.existeArista(origenArista, destinoArista) || !grafo.listaAdyacencia.containsKey(origenArista) || !grafo.listaAdyacencia.containsKey(destinoArista)) {
+                            	
+                            	System.out.println();
+                            	
+                            	if( !grafo.listaAdyacencia.containsKey(origenArista) ) {
+                            		System.out.println("vertice origen no existe. Ingrese de nuevo: ");	
+                            	}
+                            	
+                            	if( !grafo.listaAdyacencia.containsKey(destinoArista) ) {
+                            		System.out.println("vertice destino no existe. Ingrese de nuevo: ");	
+                            	}
+                            	if( grafo.existeArista(origenArista, destinoArista) ) {
+                            		System.out.println("La arista ya existe Ingrese Nuevos Valores: ");	
+                            	}
+                            
+                            	
+                                System.out.print("Ingrese el vertice origen de la arista: ");
+                                origenArista = scanner.next();
+                                System.out.print("Ingrese el destino de la arista: ");
+                                destinoArista = scanner.next();
+                                System.out.println();
+                            }
+                            
+                            System.out.print("Ingrese el peso de la arista: ");
+                            int pesoArista = scanner.nextInt();
+                            System.out.print("Ingrese el tiempo de la arista: ");
+                            int tiempoArista = scanner.nextInt();
+
+                            if (grafo.listaAdyacencia.containsKey(origenArista) && grafo.listaAdyacencia.containsKey(destinoArista)) {
+                                grafo.agregarArista(origenArista, destinoArista, pesoArista, tiempoArista);
+                                System.out.println("Arista agregada exitosamente.");
+                            } else {
+                                System.out.println("Los vértices especificados no existen en el grafo.");
+                            }
+                            System.out.println();
+                            break;
+                            
+                        case 2:
+                        	
+                        	System.out.println();
+                        	System.out.println("Editar Arista: ");
+                        	grafo.AristasDisponibles();                      	
+                        	System.out.println();
+                            System.out.println("Ingrese el origen de la arista: ");
+                            String origenEditar = scanner.next();
+                            System.out.print("Ingrese el destino de la arista: ");
+                            String destinoEditar = scanner.next();
+                            
+                            while( !grafo.listaAdyacencia.containsKey(origenEditar) || !grafo.listaAdyacencia.containsKey(destinoEditar) ) {
+                            	
+                            	System.out.println();
+                            	
+                            	if( !grafo.listaAdyacencia.containsKey(origenEditar) ) {
+                            		System.out.println("origen invalido. ingrese de nuevo: ");
+                            	}
+                            	
+                            	if( !grafo.listaAdyacencia.containsKey(destinoEditar) ) {
+                            		System.out.println("destino invalido. ingrese de nuevo: ");
+                            	}
+                            	
+                                System.out.println("Ingrese el origen de la arista: ");
+                                origenEditar = scanner.next();
+                                System.out.print("Ingrese el destino de la arista: ");
+                                destinoEditar = scanner.next();
+                            	
+                            }
+                            if (grafo.listaAdyacencia.containsKey(origenEditar) && grafo.listaAdyacencia.containsKey(destinoEditar)) {
+                                System.out.print("Nuevo peso de la arista: ");
+                                int nuevoPeso = scanner.nextInt();
+                                
+                                System.out.print("Nuevo tiempo de la arista: ");
+                                int nuevoTiempo = scanner.nextInt();
+                                
+                            	grafo.modificarArista(origenEditar, destinoEditar, nuevoPeso, nuevoTiempo);
+                            } else {
+                                System.out.println("No se han encontrado lo vertices introducidos.");
+                            }
+                            
+                            System.out.println();
+                            break;
+                            
+                        case 3:
+                        	
+                        	System.out.println();
+                        	System.out.println("Eliminar Arista: ");
+                        	grafo.AristasDisponibles();
+                        	System.out.println();
+                            System.out.println("Ingrese el origen de la arista: ");
+                            String origenEliminar = scanner.next();
+                            System.out.print("Ingrese el destino de la arista: ");
+                            String destinoEliminar = scanner.next();
+
+                            grafo.eliminarArista(origenEliminar, destinoEliminar);
+                            
+                            System.out.println();
+                            break;
+                    }
+                    System.out.println();
+                    break;
+                    
+                case 3:
+                	
+                	System.out.println();
+                	System.out.println("Dijkstra: ");
+                	grafo.VerticesDisponibles();
+                	System.out.println();
+                    System.out.print("Ingrese el vertice origen: ");
+                    origenArista = scanner.next();
+                    System.out.print("Ingrese el vertice destino: ");
+                    destinoArista = scanner.next();
+                    if (grafo.listaAdyacencia.containsKey(origenArista) && grafo.listaAdyacencia.containsKey(destinoArista)) {
+                        grafo.dijkstra(origenArista, destinoArista);
+                        System.out.println();
+                    } else {
+                        System.out.println("No se han encontrado lo vertices introducidos.");
+                    }
+                    System.out.println();
+                    break;
+                    
+                case 4:
+                	
+                	System.out.println();
+                	System.out.println("Kruskal: ");
+                	System.out.println();
+                    grafo.kruskal();
+                    System.out.println();
+                    break;
+                    
+                case 5:
+                	
+                	System.out.println();
+                	System.out.println("Prim: ");
+                	grafo.VerticesDisponibles();
+                	System.out.println();
+                    System.out.println("Ingrese el vertice origen: ");
+                    String Primorigen = scanner.next();
+                    if (grafo.listaAdyacencia.containsKey(Primorigen)) {
+                        grafo.prim(Primorigen);
+                        System.out.println();
+                    } else {
+                        System.out.println("No se han encontrado lo vertices introducidos.");
+                    }
+                    System.out.println();
+                    break;
+                    
+                case 6:
+                	
+                	System.out.println();
+                    grafo.floydWarshall();
+                    System.out.println();
+                    break;
+                    
+                case 7:
+                	
+                	System.out.println();
+                	grafo.VerticesDisponibles();
+                	System.out.println();
+                	
+                    System.out.println("Ingrese el vertice origen: ");
+                    origenArista = scanner.next();
+                    System.out.print("Ingrese el vertice destino: ");
+                    destinoArista = scanner.next();
+                    if (grafo.listaAdyacencia.containsKey(origenArista) && grafo.listaAdyacencia.containsKey(destinoArista)) {
+                        grafo.rutaMasCorta(origenArista, destinoArista);
+                        System.out.println();
+                    } else {
+                        System.out.println("No se han encontrado lo vertices introducidos.");
+                    }
+                    System.out.println();
+                    break;
+                    
+                case 8:
+                	
+                    System.out.println("Adios");
+                    break;
+                    
+                default:
+                	
+                    System.out.println("Error. Valor ingresado fuera de los limites.");
+                    break;
+            }
+
+        } while (opcion != 9);
+
+
+        scanner.close();
+    }
+    
+
+//main-------------------------------------------------------------------------------------------------------------------------------------------------    
+    public static void main(String[] args) {
+    	ListaAdyacencia grafo = new ListaAdyacencia();
         
         grafo.agregarVertice("a");
         grafo.agregarVertice("b");
@@ -321,258 +772,7 @@ public class ListaAdyacencia {
         grafo.agregarArista("b", "c", 7, 15);
         grafo.agregarArista("b", "d", 12, 20);
         grafo.agregarArista("c", "d", 15, 14);
-
-        do {
-            System.out.println("Menú de opciones:");
-            System.out.println("1. Editar Vector.");
-            System.out.println("2. Editar Aristas.");
-            System.out.println("3. Mostrar Lista.");
-            System.out.println("4. dijkstra.");
-            System.out.println("5. kruskal.");
-            System.out.println("6. prim.");
-            System.out.println("7. floyd-Warshall.");
-            System.out.println("8. Distancia mas corta y tiempo mas corto.");
-            System.out.println("9. Salir.");
-
-            opcion = scanner.nextInt();
-
-            switch (opcion) {
-                case 1:
-                    System.out.println("1. Agregar vector");
-                    System.out.println("2. Editor vector");
-                    System.out.println("3. Eliminar vector");
-                    opcion2 = scanner.nextInt();
-                    switch (opcion2) {
-                    case 1:
-                        System.out.print("Ingrese el nombre del vértice: ");
-                        String vertice = scanner.next();
-                        grafo.agregarVertice(vertice);
-
-                        System.out.println("¿Desea agregar aristas para este vértice? (s/n)");
-                        String respuesta = scanner.next();
-                        while (respuesta.equalsIgnoreCase("s")) {
-                            System.out.print("Ingrese el destino de la arista: ");
-                            String destino = scanner.next();
-                            System.out.print("Ingrese el peso de la arista: ");
-                            peso = scanner.nextInt();
-                            System.out.print("Ingrese el tiempo de la arista: ");
-                            tiempo = scanner.nextInt();
-                            grafo.agregarArista(vertice, destino, peso, tiempo);
-
-                            System.out.println("¿Desea agregar otra arista para este vértice? (s/n)");
-                            respuesta = scanner.next();
-                        }
-                    break;
-                    case 2:
-                    	 System.out.print("Ingrese el nombre del vértice que desea editar: ");
-                    	    String verticeEditar = scanner.next();
-                    	    
-                    	    if (grafo.listaAdyacencia.containsKey(verticeEditar)) {
-                    	        System.out.print("Ingrese el nuevo nombre para el vértice: ");
-                    	        String nuevoNombre = scanner.next();
-                    	        
-                    	        grafo.listaAdyacencia.put(nuevoNombre, grafo.listaAdyacencia.remove(verticeEditar));
-                    	        
-                    	        for (ArrayList<Arista> aristas : grafo.listaAdyacencia.values()) {
-                    	            for (Arista arista : aristas) {
-                    	                if (arista.destino.equals(verticeEditar)) {
-                    	                    arista.destino = nuevoNombre;
-                    	                }
-                    	                if (arista.origen.equals(verticeEditar)) {
-                    	                    arista.origen = nuevoNombre;
-                    	                }
-                    	            }
-                    	        }
-                    	        
-                    	        System.out.println("Vértice " + verticeEditar + " ha sido modificado a " + nuevoNombre);
-                    	    } else {
-                    	        System.out.println("El vértice especificado no existe en el grafo.");
-                    	    }
-                    break;
-                    case 3:
-                        System.out.print("Ingrese el nombre del vértice que desea eliminar: ");
-                        String verticeEliminar = scanner.next();
-                        
-                        if (grafo.listaAdyacencia.containsKey(verticeEliminar)) {
-                            grafo.listaAdyacencia.remove(verticeEliminar);
-                            
-                            for (ArrayList<Arista> aristas : grafo.listaAdyacencia.values()) {
-                                aristas.removeIf(arista -> arista.destino.equals(verticeEliminar));
-                            }
-                            
-                            System.out.println("Vértice " + verticeEliminar + " y todas sus aristas asociadas han sido eliminadas.");
-                        } else {
-                            System.out.println("El vértice especificado no existe en el grafo.");
-                        }
-                    break;
-                    }
-                    break;
-                case 2:
-                	System.out.println("1. Agregar Arista");
-                    System.out.println("2. Editor Arista");
-                    System.out.println("3. Eliminar Arista");
-                    opcion2 = scanner.nextInt();
-                    switch (opcion2) {
-                    case 1:
-                        System.out.print("Ingrese el origen de la arista: ");
-                        origenArista = scanner.next();
-                        System.out.print("Ingrese el destino de la arista: ");
-                        destinoArista = scanner.next();
-                        System.out.print("Ingrese el peso de la arista: ");
-                        int pesoArista = scanner.nextInt();
-                        System.out.print("Ingrese el tiempo de la arista: ");
-                        int tiempoArista = scanner.nextInt();
-                        
-                        if (grafo.listaAdyacencia.containsKey(origenArista) && grafo.listaAdyacencia.containsKey(destinoArista)) {
-                            grafo.agregarArista(origenArista, destinoArista, pesoArista, tiempoArista);
-                            System.out.println("Arista agregada exitosamente.");
-                        } else {
-                            System.out.println("Los vértices especificados no existen en el grafo.");
-                        }
-                        break;
-                    case 2:
-                    	System.out.print("Ingrese el origen de la arista: ");
-                        String origenEditar = scanner.next();
-                        System.out.print("Ingrese el destino de la arista: ");
-                        String destinoEditar = scanner.next();
-                        
-                        if (grafo.listaAdyacencia.containsKey(origenEditar) && grafo.listaAdyacencia.containsKey(destinoEditar)) {
-                            Arista aristaEditar = null;
-                            for (Arista arista : grafo.listaAdyacencia.get(origenEditar)) {
-                                if (arista.destino.equals(destinoEditar)) {
-                                    aristaEditar = arista;
-                                    break;
-                                }
-                            }
-                            
-                            if (aristaEditar != null) {
-                                System.out.println("Arista encontrada. Ingrese los nuevos valores:");
-                                System.out.print("Nuevo peso de la arista: ");
-                                int nuevoPeso = scanner.nextInt();
-                                System.out.print("Nuevo tiempo de la arista: ");
-                                int nuevoTiempo = scanner.nextInt();
-                                
-                                aristaEditar.peso = nuevoPeso;
-                                aristaEditar.tiempo = nuevoTiempo;
-                                
-                                System.out.println("Arista editada exitosamente.");
-                            } else {
-                                System.out.println("La arista especificada no existe en el grafo.");
-                            }
-                        } else {
-                            System.out.println("No se han encontrado lo vertices introducidos.");
-                        }
-                        break;
-                    case 3:
-                    	System.out.print("Ingrese el origen de la arista: ");
-                        String origenEliminar = scanner.next();
-                        System.out.print("Ingrese el destino de la arista: ");
-                        String destinoEliminar = scanner.next();
-                        
-                        if (grafo.listaAdyacencia.containsKey(origenEliminar) && grafo.listaAdyacencia.containsKey(destinoEliminar)) {
-
-                            boolean aristaEncontrada = false;
-                            ArrayList<Arista> aristasOrigen = grafo.listaAdyacencia.get(origenEliminar);
-                            for (int i = 0; i < aristasOrigen.size(); i++) {
-                                Arista arista = aristasOrigen.get(i);
-                                if (arista.destino.equals(destinoEliminar)) {
-                                    aristasOrigen.remove(i);
-                                    aristaEncontrada = true;
-                                    break;
-                                }
-                            }
-                            
-                            if (aristaEncontrada) {
-                                System.out.println("Arista eliminada exitosamente.");
-                            } else {
-                                System.out.println("La arista especificada no existe en el grafo.");
-                            }
-                        } else {
-                            System.out.println("No se han encontrado lo vertices introducidos.");
-                        }
-                        break;
-                    }
-                    break;
-                case 3:
-                	grafo.imprimirLista();
-                    System.out.println();
-                    break;
-                case 4:
-                	System.out.print("Ingrese el origen de la arista: ");
-                    origenArista = scanner.next();
-                    System.out.print("Ingrese el destino de la arista: ");
-                    destinoArista = scanner.next();
-                    if (grafo.listaAdyacencia.containsKey(origenArista) && grafo.listaAdyacencia.containsKey(destinoArista)) {
-                    	grafo.dijkstra(origenArista, destinoArista);
-                    	System.out.println();
-                    }else {
-                    	System.out.println("No se han encontrado lo vertices introducidos.");
-                    }
-                    break;
-                case 5:
-                	grafo.kruskal();
-                    System.out.println();
-                	break;
-                case 6:
-                	System.out.print("Ingrese el origen de la arista: ");
-                    String KruskalArista = scanner.next();
-                    if (grafo.listaAdyacencia.containsKey(KruskalArista)) {
-                    	grafo.prim(KruskalArista);
-                        System.out.println();
-                    }else {
-                    	System.out.println("No se han encontrado lo vertices introducidos.");
-                    }
-                	break;
-                case 7:
-                	grafo.floydWarshall();
-                	break;
-                case 8:
-                	System.out.print("Ingrese el origen de la arista: ");
-                    origenArista = scanner.next();
-                    System.out.print("Ingrese el destino de la arista: ");
-                    destinoArista = scanner.next();
-                    if (grafo.listaAdyacencia.containsKey(origenArista) && grafo.listaAdyacencia.containsKey(destinoArista)) {
-                    	grafo.rutaMasCorta(origenArista, destinoArista);
-                    	System.out.println();
-                    }else {
-                    	System.out.println("No se han encontrado lo vertices introducidos.");
-                    }
-                	break;
-                case 9:
-                	System.out.println("Adios");
-                	break;
-                default:
-                    System.out.println("Error. Valor ingresado fuera de los limetes.");
-                    break;
-            }
-
-        } while (opcion != 9);
-
-        scanner.close();
-
-        /*grafo.agregarVertice("a");
-        grafo.agregarVertice("b");
-        grafo.agregarVertice("c");
-        grafo.agregarVertice("d");
-
-        grafo.agregarArista("a", "b", 4, 20);
-        grafo.agregarArista("b", "c", 7, 15);
-        grafo.agregarArista("b", "d", 12, 20);
-        grafo.agregarArista("c", "d", 15, 14);
         
-
-        grafo.imprimirLista();
-        System.out.println();
-
-        grafo.dijkstra("a", "d");
-        System.out.println();
-        
-        grafo.kruskal();
-        System.out.println();
-
-        grafo.prim("a");
-        System.out.println();
-        
-        grafo.floydWarshall();*/
+        menu(grafo);
     }
 }
