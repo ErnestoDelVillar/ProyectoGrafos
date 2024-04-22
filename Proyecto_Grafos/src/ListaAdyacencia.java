@@ -32,16 +32,30 @@ public class ListaAdyacencia {
     }
 
 //Vertices---------------------------------------------------------------------------------------------------------------------------------------------
+    
+    /*
+    Función: agregarVertice
+    Argumento: String vertice
+    Objetivo: Agregar a la lista de adyacencia un vertice sin aristas
+    Retorno: ninguno.
+ */
+    
     public void agregarVertice(String vertice) {
         listaAdyacencia.put(vertice, new ArrayList<>());
     }
     
+    /*
+    Función: eliminarVertice
+    Argumento: String verticeEliminar. key del vertice que se eliminara
+    Objetivo: eliminar de lista de adyacencia el vertice en verticeEliminar del mapa .
+    Retorno: ninguno.
+ */
+    
     public void eliminarVertice(String verticeEliminar) {
         if (listaAdyacencia.containsKey(verticeEliminar)) {
-            // Eliminar el vértice de la lista de adyacencia
+        	
             listaAdyacencia.remove(verticeEliminar);
 
-            // Eliminar todas las aristas que tengan el vértice como origen o destino
             for (ArrayList<Arista> aristas : listaAdyacencia.values()) {
                 aristas.removeIf(arista -> arista.origen.equals(verticeEliminar) || arista.destino.equals(verticeEliminar));
             }
@@ -51,6 +65,14 @@ public class ListaAdyacencia {
             System.out.println("El vértice especificado no existe en el grafo.");
         }
     }
+
+    /*
+    Función: editarVertice
+    Argumento: String verticeEliminar. key del vertice que se modificara.
+    		   String nuevoNombre. nombre que se le asignara al veritce
+    Objetivo: modificar el nombre (el key dentro del hash map) del vertice verticeEditar.
+    Retorno: ninguno.
+ */
     
     public void editarVertice(String verticeEditar, String nuevoNombre) {
 
@@ -68,8 +90,15 @@ public class ListaAdyacencia {
         }
 }   
     
+    /*
+    Función: VerticesDisponibles
+    Argumento:
+    Objetivo: mostrar por pantalla los vertices disponibles.
+    Retorno: ninguno.
+ */
+    
     public void VerticesDisponibles() {
-   	 ArrayList<String> verticesImpresos = new ArrayList<>(); // Para evitar imprimir vértices repetidos
+   	 ArrayList<String> verticesImpresos = new ArrayList<>();
        
        System.out.println("Vertices disponibles: ");
        for (String vertice : listaAdyacencia.keySet()) {
@@ -81,6 +110,16 @@ public class ListaAdyacencia {
    } 
     
 // Aristas---------------------------------------------------------------------------------------------------------------------------------------------    
+ 
+    /*
+    Función: agregar arista 
+    Argumento: String origen. clave del vertice origen de la arista.
+     		   String destino. clave del vertice destino de la arista.
+     		   int Peso. peso de la nueva arista.
+     		   int Tiempo. tiempo de la nueva arista.
+    Objetivo: eliminar de lista de adyacencia el vertice en verticeEliminar del mapa .
+    Retorno: ninguno.
+ */
     
     public void agregarArista(String origen, String destino, int peso, int tiempo) {
         listaAdyacencia.get(origen).add(new Arista(origen, destino, peso, tiempo));
@@ -89,39 +128,46 @@ public class ListaAdyacencia {
         }
     }    
     
+    /*
+    Función: modificarArista
+    Argumento: String origen. clave del vertice origen de la arista.
+     		   String destino. clave del vertice destino de la arista.
+     		   int nuevoPeso. peso de la arista modificada.
+     		   int nuevoTiempo. tiempo de la arista modificada.
+    Objetivo: modificar la arista con origen "origen" y destino "destino" e insertarle un peso "nuevoPeso" y un tiempo "nuevoTiempo" .
+    Retorno: ninguno.
+ */
+    
     public void modificarArista(String origen, String destino, int nuevoPeso, int nuevoTiempo) {
-        if (listaAdyacencia.containsKey(origen) && listaAdyacencia.containsKey(destino)) {
-            boolean aristaEncontrada = false;
-            // Modificar la arista en la dirección origen -> destino
+        
             ArrayList<Arista> aristasOrigen = listaAdyacencia.get(origen);
             for (Arista arista : aristasOrigen) {
                 if (arista.destino.equals(destino)) {
                     arista.peso = nuevoPeso;
                     arista.tiempo = nuevoTiempo;
-                    aristaEncontrada = true;
                     System.out.println("Arista modificada exitosamente.");
                     break;
                 }
             }
-            // Modificar la arista en la dirección destino -> origen
+            
             ArrayList<Arista> aristasDestino = listaAdyacencia.get(destino);
             for (Arista arista : aristasDestino) {
                 if (arista.destino.equals(origen)) {
                     arista.peso = nuevoPeso;
                     arista.tiempo = nuevoTiempo;
-                    aristaEncontrada = true;
                     break;
                 }
             }
-            if (!aristaEncontrada) {
-                System.out.println("La arista especificada no existe en el grafo.");
-            }
-        } else {
-            System.out.println("No se han encontrado los vértices introducidos.");
-        }
+
     }
-
-
+    
+    /*
+    Función: eliminarArista
+        Argumento: String origen. clave del vertice origen de la arista.
+     		   	   String destino. clave del vertice destino de la arista.
+    Objetivo: eliminar de lista de aristas del vertice en la variable de lista de adyacencia.
+    Retorno: boolean. true(elimino la arista). false(no elimino la arista).
+ */
     
     public boolean eliminarArista(String origen, String destino) {
     	
@@ -149,26 +195,38 @@ public class ListaAdyacencia {
         }
     }    
     
+    /*
+    Función: existeArista
+    Argumento: String origen. clave del vertice origen de la arista.
+     		   String destino. clave del vertice destino de la arista.
+    Objetivo: verificar si existe ya existe una arista con "origen" y "destino".
+    Retorno: boolean. true(si existe una arista con origen "origen" y un destino (destino)). false(si no encuentra la arista). 
+ */
+    
     public boolean existeArista(String origen, String destino) {
         
         if (!listaAdyacencia.containsKey(origen) || !listaAdyacencia.containsKey(destino)) {
             return false;
         }
         
-        // Recorre las aristas del vértice origen para verificar si existe una arista al destino
         for (Arista arista : listaAdyacencia.get(origen)) {
             if (arista.destino.equals(destino)) {
-                return true; // Se encontró una arista al destino desde el origen
+                return true;
             }
         }
         
-        
-        // Si no se encontró una arista al destino desde el origen
         return false;
     }    
     
-    public void AristasDisponibles() {
-        HashSet<String> aristasImpresas = new HashSet<>(); // Usamos un conjunto para evitar aristas duplicadas
+    /*
+    Función: aristasDisponibles
+    Argumento: 
+    Objetivo: mostrar las aristas disponibles.
+    Retorno: ninguno.
+ */
+    
+    public void aristasDisponibles() {
+        HashSet<String> aristasImpresas = new HashSet<>();
         
         System.out.println("Aristas Disponibles: ");
         for (Map.Entry<String, ArrayList<Arista>> entry : listaAdyacencia.entrySet()) {
@@ -186,10 +244,18 @@ public class ListaAdyacencia {
     
 //Algoritmos de La ruta mas corta----------------------------------------------------------------------------------------------------------------------    
     
+    /*
+    Función: dijkstra.
+    Argumento: String origen. vertice origen.
+     		   String destino. vertice destino.
+    Objetivo: buscar la ruta mas corta desde el vertice origen hasta el vertice destino.
+    Retorno: ninguno.
+ */
+    
     public void dijkstra(String origen, String destino) {
-        Map<String, Integer> distancia = new HashMap<>(); 
-        Map<String, Boolean> visitado = new HashMap<>(); 
-        Map<String, String> camino = new HashMap<>(); 
+        Map<String, Integer> distancia = new HashMap<>(); // almacena la distancia mas corta
+        Map<String, Boolean> visitado = new HashMap<>(); // almacena si un vertice ya fue visitado o no
+        Map<String, String> camino = new HashMap<>(); // guarda el camino mas corto
 
         for (String vertice : listaAdyacencia.keySet()) {
             distancia.put(vertice, Integer.MAX_VALUE);
@@ -197,11 +263,12 @@ public class ListaAdyacencia {
             camino.put(vertice, null);
         }
 
-        distancia.put(origen, 0); 
+        distancia.put(origen, 0);
 
-        PriorityQueue<String> cola = new PriorityQueue<>((a, b) -> distancia.get(a) - distancia.get(b)); 
-        cola.add(origen); 
-
+        PriorityQueue<String> cola = new PriorityQueue<>((a, b) -> distancia.get(a) - distancia.get(b)); //cola de prioridad  para ordenar los vertices
+        cola.add(origen);
+        
+        //bucle principal 
         while (!cola.isEmpty()) {
             String u = cola.poll();
             visitado.put(u, true);
@@ -209,9 +276,10 @@ public class ListaAdyacencia {
             for (Arista arista : listaAdyacencia.get(u)) {
                 String v = arista.destino;
                 int pesoUV = arista.peso;
+                int nuevaDistancia = distancia.get(u) + pesoUV;
 
-                if (!visitado.get(v) && distancia.get(u) != Integer.MAX_VALUE && distancia.get(u) + pesoUV < distancia.get(v)) {
-                    distancia.put(v, distancia.get(u) + pesoUV);
+                if (!visitado.get(v) && nuevaDistancia < distancia.get(v)) {
+                    distancia.put(v, nuevaDistancia);
                     camino.put(v, u);
                     cola.add(v);
                 }
@@ -224,7 +292,12 @@ public class ListaAdyacencia {
         imprimirRuta(origen, destino, camino);
     }
 
-    
+    /*
+    Función: floydWarshall.
+    Argumento: ninguno
+    Objetivo: buscar la ruta mas corta entre todos los pares de vertices.
+    Retorno: ninguno.
+ */    
     public void floydWarshall() {
         int n = listaAdyacencia.size();
         int[][] distancias = new int[n][n];
@@ -237,8 +310,8 @@ public class ListaAdyacencia {
 
         for (String vertice : listaAdyacencia.keySet()) {
             for (Arista arista : listaAdyacencia.get(vertice)) {
-                int fila = getIndex(vertice);
-                int columna = getIndex(arista.destino);
+                int fila = buscarIndice(vertice);
+                int columna = buscarIndice(arista.destino);
                 distancias[fila][columna] = arista.peso;
             }
         }
@@ -261,11 +334,16 @@ public class ListaAdyacencia {
             System.out.println();
         }
     }
-
-    private int getIndex(String vertice) {
+    /*
+    Función: getIndex.
+    Argumento: String origen. vertice origen.
+    Objetivo: buscar el indice del vertice "vertice".
+    Retorno: ninguno.
+ */
+    private int buscarIndice(String vertice) {
         int i = 0;
-        for (String v : listaAdyacencia.keySet()) {
-            if (v.equals(vertice)) {
+        for (String clave : listaAdyacencia.keySet()) {
+            if (clave.equals(vertice)) {
                 return i;
             }
             i++;
@@ -273,8 +351,16 @@ public class ListaAdyacencia {
         return -1;
     }
     
-
+    /*
+    Función: rutaMascorta.
+    Argumento: String origen. vertice origen.
+     		   String destino. vertice destino.
+    Objetivo: buscar la ruta mas corta desde el vertice origen hasta el vertice destino por peso de aristas como por tiempo.
+    Retorno: ninguno.
+ */
+    
     public void rutaMasCorta(String origen, String destino) {
+    	
         Map<String, Integer> distanciaPeso = new HashMap<>();
         Map<String, Boolean> visitadoPeso = new HashMap<>();
         Map<String, String> caminoPeso = new HashMap<>();
@@ -346,8 +432,16 @@ public class ListaAdyacencia {
         imprimirRuta(origen, destino, caminoTiempo);
         System.out.println("Tiempo total: " + distanciaTiempo.get(destino));
     }
+
     
 //Algoritmos de Arbol de expancion minima--------------------------------------------------------------------------------------------------------------    
+    
+    /*
+    Función: prim.
+    Argumento: String origen. vertice origen.
+    Objetivo: buscar el arbol de expansion minima desde el vertice origen.
+    Retorno: ninguno.
+ */
     
     public void prim(String origen) {
         Map<String, Integer> pesoMinimo = new HashMap<>(); 
@@ -395,6 +489,12 @@ public class ListaAdyacencia {
         }
     }
 
+    /*
+    Función: kruskal.
+    Argumento:
+    Objetivo: buscar el arbol de expansion minima sin que formen ciclos.
+    Retorno: ninguno.
+ */
     
     public void kruskal() {
         int numVertices = listaAdyacencia.size();
@@ -432,6 +532,13 @@ public class ListaAdyacencia {
 
 //Metodos Auxiliares-----------------------------------------------------------------------------------------------------------------------------------    
     
+    /*
+    Función: imprimirLista
+    Argumento: ninguno
+    Objetivo: mostrar la lista de adyacencia por vertices y sus conexiones.
+    Retorno: ninguno.
+ */
+    
     public void imprimirLista() {
         for (Map.Entry<String, ArrayList<Arista>> entry : listaAdyacencia.entrySet()) {
             System.out.print("Vértice " + entry.getKey() + " está conectado con: ");
@@ -441,7 +548,16 @@ public class ListaAdyacencia {
             System.out.println();
         }
     }
-
+    
+    /*
+    Función: imprimirRuta
+    Argumento: String origen. clave del vertice origen de la arista.
+     		   String destino. clave del vertice destino de la arista.
+     		   Map<String, String> camino. mapa que almacena el camino por las conexiones en el grafo.
+    Objetivo: imprimir la ruta desde un origen hasta un destino en un grafo representado por un mapa.
+    Retorno: ninguno.
+ */
+    
     private void imprimirRuta(String origen, String destino, Map<String, String> camino) {
         ArrayList<String> ruta = new ArrayList<>();
         for (String v = destino; v != null; v = camino.get(v)) {
@@ -452,6 +568,14 @@ public class ListaAdyacencia {
         }
         System.out.println();
     }    
+    
+
+    /*
+    Función: menu
+    Argumento: ninguno 
+    Objetivo: metodo que se utiliza para mostrar por pantalla un menu para la manipulacion del grafo.
+    Retorno: ninguno.
+ */
     
     public static void menu(ListaAdyacencia grafo) {
         int opcion, opcion2, peso, tiempo;
@@ -611,7 +735,7 @@ public class ListaAdyacencia {
                         	
                         	System.out.println();
                         	System.out.println("Editar Arista: ");
-                        	grafo.AristasDisponibles();                      	
+                        	grafo.aristasDisponibles();                      	
                         	System.out.println();
                             System.out.println("Ingrese el origen de la arista: ");
                             String origenEditar = scanner.next();
@@ -655,7 +779,7 @@ public class ListaAdyacencia {
                         	
                         	System.out.println();
                         	System.out.println("Eliminar Arista: ");
-                        	grafo.AristasDisponibles();
+                        	grafo.aristasDisponibles();
                         	System.out.println();
                             System.out.println("Ingrese el origen de la arista: ");
                             String origenEliminar = scanner.next();
