@@ -36,7 +36,7 @@ public class ListaAdyacencia {
     /*
     Función: agregarVertice
     Argumento: String vertice
-    Objetivo: Agregar a la lista de adyacencia un vertice sin aristas
+    Objetivo: Agregar a la lista de adyacencia un vertice sin aristas.
     Retorno: ninguno.
  */
     
@@ -52,6 +52,7 @@ public class ListaAdyacencia {
  */
     
     public void eliminarVertice(String verticeEliminar) {
+    	
         if (listaAdyacencia.containsKey(verticeEliminar)) {
         	
             listaAdyacencia.remove(verticeEliminar);
@@ -117,7 +118,7 @@ public class ListaAdyacencia {
      		   String destino. clave del vertice destino de la arista.
      		   int Peso. peso de la nueva arista.
      		   int Tiempo. tiempo de la nueva arista.
-    Objetivo: eliminar de lista de adyacencia el vertice en verticeEliminar del mapa .
+    Objetivo: Agregar una arista que va desde "origen" hasta "destino" con un peso "peso" y un tiempo "tiempo" .
     Retorno: ninguno.
  */
     
@@ -335,10 +336,10 @@ public class ListaAdyacencia {
         }
     }
     /*
-    Función: getIndex.
-    Argumento: String origen. vertice origen.
+    Función: buscarIndice.
+    Argumento: String vertice.
     Objetivo: buscar el indice del vertice "vertice".
-    Retorno: ninguno.
+    Retorno: i. indice donde se encuentra la clave. -1 si no se encontro la clave.
  */
     private int buscarIndice(String vertice) {
         int i = 0;
@@ -617,6 +618,15 @@ public class ListaAdyacencia {
                             System.out.println("Agregar Vertice: ");
                             System.out.print("Ingrese el nombre del vértice: ");
                             String vertice = scanner.next();
+                            
+                            while(grafo.listaAdyacencia.containsKey(vertice)) {
+                            	if( grafo.listaAdyacencia.containsKey(vertice) ) {
+                            		System.out.println("El vertice ingresado ya existe. Ingrese otro: ");	
+                            	}
+                            	System.out.print("Ingrese el nombre del vértice: ");
+                            	vertice = scanner.next();
+                            }
+                            
                             grafo.agregarVertice(vertice);
 
                             String respuesta = "s";
@@ -626,8 +636,18 @@ public class ListaAdyacencia {
                             	System.out.println();
                                 System.out.print("Ingrese el destino de la arista: ");
                                 String destino = scanner.next();
+                                
                                 System.out.print("Ingrese el peso de la arista: ");
                                 peso = scanner.nextInt();
+                                
+                                while(peso < 1) {
+                                	if (peso < 1 ) {
+                                		System.out.println("Peso invalido. vuelva a ingresar ");
+                                		System.out.println("Ingrese el peso de la arista: ");
+                                		peso = scanner.nextInt();
+                                	}
+                                }
+                                
                                 System.out.print("Ingrese el tiempo de la arista: ");
                                 tiempo = scanner.nextInt();
                                 grafo.agregarArista(vertice, destino, peso, tiempo);
@@ -719,6 +739,15 @@ public class ListaAdyacencia {
                             
                             System.out.print("Ingrese el peso de la arista: ");
                             int pesoArista = scanner.nextInt();
+                            
+                            while(pesoArista < 1) {
+                            	if (pesoArista < 1 ) {
+                            		System.out.println("Peso invalido. vuelva a ingresar: ");
+                            		System.out.println("Ingrese el peso de la arista: ");
+                            		pesoArista = scanner.nextInt();
+                            	}
+                            }
+                            
                             System.out.print("Ingrese el tiempo de la arista: ");
                             int tiempoArista = scanner.nextInt();
 
