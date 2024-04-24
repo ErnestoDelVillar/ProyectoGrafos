@@ -1,4 +1,4 @@
-Esto codigo se creo por la colaboracion de dos personas Erick De la Rosa y Ernesto del billar 
+Esto codigo se creo por la colaboracion de dos personas Erick De la Rosa y Ernesto del Villar. 
 
 La funcion ListaAdyacencia Esto crea una nueva instancia de LinkedHashMap. En resumen, esta función simplemente crea una instancia vacía de la lista de adyacencia, que se utilizará para almacenar los vértices y sus aristas en el grafo.
 
